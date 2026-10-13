@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172b4d">
+  <meta name="description" content="Votre atelier de préparation Tech Lead et Fullstack Java, Spring Boot et React. Fiches, quiz, planning et entretien blanc, entièrement hors ligne.">
+  <title>LeadLab — Préparation Tech Lead / Fullstack</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Aller au contenu</a>
+  <aside class="sidebar" aria-label="Navigation principale">
+    <a class="brand" href="#dashboard" aria-label="LeadLab, accueil"><span class="brand-symbol">L<span>↗</span></span><span>LeadLab<small>ATELIER D’ENTRETIEN</small></span></a>
+    <div class="workspace-label">VOTRE PRÉPARATION</div>
+    <nav id="navigation"></nav>
+    <div class="sidebar-bottom"><span class="status-dot"></span> Prêt pour le hors ligne<small>Java · Spring · React</small><div class="sidebar-note">Une réponse solide commence<br>par un raisonnement clair.</div></div>
+  </aside>
+  <div class="shell">
+    <header class="topbar"><div class="breadcrumbs">Mon espace <span>/</span> <strong id="page-label">Tableau de bord</strong></div><div class="topbar-actions"><span class="offline-tag"><span class="status-dot"></span> 100 % local</span><a href="#settings" class="avatar" aria-label="Ouvrir mes données">TL</a></div></header>
+    <div id="storage-warning" class="storage-warning" hidden>Le navigateur ne permet pas la sauvegarde locale. Vos changements restent dans cette session ; exportez-les dans « Mes données » avant de fermer.</div>
+    <main id="main" tabindex="-1"></main>
+    <footer>Conçu pour comprendre, expliquer et décider. <a href="#sources">Références & méthode</a><span>Aucun compte. Aucun envoi de données.</span></footer>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <dialog id="confirm-dialog"><form method="dialog"><h2 id="confirm-title">Confirmer</h2><p id="confirm-message"></p><div class="button-row"><button value="cancel" class="button secondary">Annuler</button><button value="confirm" class="button danger">Confirmer</button></div></form></dialog>
+</body>
+</html>
