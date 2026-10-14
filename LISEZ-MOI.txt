@@ -5,15 +5,15 @@ Java · Spring Boot · React / TypeScript
 OUVRIR LE SITE
 1. Extrayez tout le ZIP dans un dossier.
 2. Ouvrez index.html avec un navigateur moderne (Edge, Chrome, Firefox…).
-3. Gardez index.html, styles.css, data.js, app.js et assets ensemble.
+3. Gardez index.html, styles.css, data.js, app.js ainsi que les dossiers assets et content ensemble.
 Aucune installation, connexion Internet ou dépendance serveur n’est nécessaire.
 Le site fonctionne avec des scripts classiques, sans requête de chargement de données.
 
 CONTENU
 - 8 modules : Java Core, Spring Boot, JPA/Hibernate, Spring Security,
   React/TypeScript, architecture, Tests/DevOps, leadership technique.
-- 48 fiches détaillées : explications, exemples, pièges et relances.
-- 32 questions de quiz, ordre et choix mélangés, corrections détaillées,
+- 200 fiches détaillées (25 par module) : explications, exemples, pièges et relances.
+- 200 questions de quiz (25 par module), ordre et choix mélangés, corrections détaillées,
   bilan, historique et possibilité de rejouer ses erreurs.
 - Planning de 14 jours avec exercices, livrables et dates ajustables.
 - Entretien blanc : 4, 6 ou 8 questions, chronomètre de 20, 30 ou 40 minutes,
@@ -43,6 +43,8 @@ COMMENT S’ENTRAÎNER
 5. Faites un quiz, revoyez vos erreurs puis réalisez l’exercice du jour.
 6. En simulation, répondez avant de révéler les attendus, puis auto-évaluez-vous.
 
+Le planning cible les fondamentaux ; les fiches supplémentaires permettent
+un approfondissement à votre rythme. Les anciens identifiants sont conservés.
 Les scores de quiz et la maîtrise déclarée des fiches sont distincts.
 Le score d’entretien est une auto-évaluation, pas une notation automatique.
 Le chronomètre est indicatif : vous pouvez continuer après son expiration.
@@ -60,6 +62,7 @@ STRUCTURE
 index.html       Structure de la page
 styles.css       Design responsive et styles d’impression
 data.js          Fiches, quiz, planning, cas pratiques et références
+content/         Questions et quiz complémentaires, chargés localement
 app.js           Navigation, interactions et stockage local
 assets/          Icône du site
 
