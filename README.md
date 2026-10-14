@@ -6,7 +6,7 @@ Atelier de préparation à un entretien **Tech Lead / développeur Fullstack Jav
 
 Téléchargez le dépôt avec **Code → Download ZIP**, extrayez tout le dossier puis ouvrez **index.html** dans Edge, Chrome ou Firefox. Aucune installation, compilation ou dépendance serveur n’est nécessaire.
 
-Gardez `index.html`, `styles.css`, `data.js`, `app.js` et les dossiers `assets` et `content` ensemble.
+Gardez `index.html`, `styles.css`, `redesign.css`, `data.js`, `app.js` et les dossiers `assets` et `content` ensemble.
 
 ## Ce qui est inclus
 
@@ -14,6 +14,7 @@ Gardez `index.html`, `styles.css`, `data.js`, `app.js` et les dossiers `assets` 
 - 200 fiches détaillées (25 par module) avec mécanismes, exemples de code, pièges et relances d’entretien.
 - 200 questions de quiz (25 par module) : ordre et choix mélangés, correction expliquée, score et rejeu des erreurs.
 - Recherche, filtres, favoris et notes personnelles.
+- Affichage progressif des fiches dans la bibliothèque générale, par lots de 25 ; chaque module conserve ses 25 fiches accessibles directement.
 - Planning de 14 jours : objectifs, exercices, livrables et dates ajustables.
 - Entretien blanc de 4, 6 ou 8 questions, avec chronomètre, notes, attendus et bilan d’auto-évaluation.
 - 4 mises en situation : réservation de stock, incident API, livraison sous pression et recherche multi-tenant.
@@ -39,6 +40,7 @@ Le score d’entretien est une **auto-évaluation**, sans analyse automatique ni
 ```text
 index.html       Structure de la page et chargement local
 styles.css       Design responsive et impression
+redesign.css     Direction visuelle et ajustements responsive
 data.js          Fiches, quiz, planning, cas pratiques et références
 content/         Banque complémentaire : 19 fiches et 21 quiz par module
 app.js           Navigation, interactions et stockage

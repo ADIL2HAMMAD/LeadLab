@@ -138,7 +138,7 @@
   const moduleOptions = (selected = 'all') => `<option value="all"${selected === 'all' ? ' selected' : ''}>Tous les modules</option>${modules.map(m => `<option value="${m.id}"${selected === m.id ? ' selected' : ''}>${m.title}</option>`).join('')}`;
   function moduleCard(m) {
     const count = masteredCount(m);
-    return `<article class="module-card"><div class="module-top"><span class="module-icon" style="--module-bg:${m.bg};--module-color:${m.color}">${m.symbol}</span><span class="pill">${m.duration}</span></div><h3>${m.title}</h3><p>${m.description}</p><div class="module-progress-label"><span>${count} / ${m.questions.length} fiches maîtrisées</span><span>${percent(count,m.questions.length)} %</span></div>${bar(percent(count,m.questions.length))}<a class="module-link" href="#module/${m.id}">Explorer le module ${icon('arrow')}</a></article>`;
+    return `<article class="module-card" style="--module-color:${m.color}"><div class="module-top"><span class="module-icon" style="--module-bg:${m.bg}">${m.symbol}</span><span class="pill">${m.duration}</span></div><h3>${m.title}</h3><p>${m.description}</p><div class="module-progress-label"><span>${count} / ${m.questions.length} fiches maîtrisées</span><span>${percent(count,m.questions.length)} %</span></div>${bar(percent(count,m.questions.length))}<a class="module-link" href="#module/${m.id}">Explorer le module ${icon('arrow')}</a></article>`;
   }
   function renderDashboard() {
     const day = nextDay();
@@ -150,6 +150,7 @@
       <div class="dashboard-columns"><section><div class="section-heading"><div><h2>Vos modules de révision</h2><p>Le socle technique. Les réflexes d’un lead.</p></div><a class="text-link" href="#modules">Toutes les fiches →</a></div><div class="module-grid">${modules.map(moduleCard).join('')}</div></section><aside class="rail"><section class="rail-card"><span class="eyebrow">${day ? `PROCHAINE ÉTAPE · JOUR ${String(day.day).padStart(2,'0')}` : 'PARCOURS TERMINÉ'}</span><h3>${day ? day.title : 'Gardez le rythme'}</h3><p>${day ? day.objective : 'Reprenez vos points faibles et passez un nouvel entretien blanc.'}</p><ul class="mini-checklist">${(day ? day.tasks : ['Revoir les erreurs des quiz.','Répéter une simulation.']).map(t => `<li>${icon('check')}<span>${t}</span></li>`).join('')}</ul><a class="button secondary" href="#plan${day ? `/${day.day}` : ''}">${day ? `Voir le jour ${day.day}` : 'Revoir le planning'} ${icon('arrow')}</a></section><section class="rail-card interview"><span class="interview-code">“ ”</span><span class="eyebrow">LE MOMENT DE SE LANCER</span><h3>Et si l’entretien<br>était aujourd’hui ?</h3><p>Des questions tirées au sort, un chronomètre et une grille pour évaluer vos réponses.</p><a class="button mint" href="#interview">${icon('mic')} Passer un entretien blanc</a></section><div class="tip"><strong>Le réflexe Tech Lead</strong>Après chaque réponse, ajoutez : « Dans quel contexte ferais-je un autre choix ? »</div></aside></div>`;
   }
   let libraryFilter = { module:'all', status:'all', search:'' };
+  let libraryVisibleCount = 25;
   function questionHTML(q, open = false) {
     const done = state.mastered.includes(q.id), favorite = state.favorites.includes(q.id);
     return `<details class="question-card${done ? ' mastered' : ''}" id="question-${q.id}"${open ? ' open' : ''}><summary><span class="question-check">${done ? icon('check') : icon('book')}</span><span><span class="question-meta"><span class="pill">${moduleMap.get(q.module).short}</span><span class="pill">${q.level}</span></span><span class="question-title">${escape(q.title)}</span></span></summary><div class="answer">${answerHTML(q)}<div class="answer-actions"><button class="button ${done ? 'primary' : 'secondary'} small" data-action="master" data-id="${q.id}" aria-pressed="${done}">${icon('check')} ${done ? 'Maîtrisée' : 'Marquer comme maîtrisée'}</button><button class="button secondary small" data-action="favorite" data-id="${q.id}" aria-pressed="${favorite}">${icon('star')} ${favorite ? 'Retirer des favoris' : 'Garder en favori'}</button></div><details class="notes"${state.notes[q.id] ? ' open' : ''}><summary>Mes notes personnelles ${state.notes[q.id] ? '· enregistrées' : ''}</summary><label class="field"><span>Notes pour cette fiche</span><textarea data-note="${q.id}" maxlength="10000" placeholder="Votre exemple, un point à revoir, une expérience à raconter…">${escape(state.notes[q.id] || '')}</textarea></label></details></div></details>`;
@@ -166,8 +167,9 @@
   }
   function updateLibraryResults() {
     const results = filterQuestions();
-    document.getElementById('results-count').textContent = `${results.length} fiche${results.length > 1 ? 's' : ''} · Ouvrez une question, formulez votre réponse, puis comparez.`;
-    document.getElementById('question-results').innerHTML = results.length ? results.map(q => questionHTML(q)).join('') : `<div class="empty-state"><h3>Aucune fiche pour ces filtres</h3><p>Essayez un autre terme ou affichez toutes les fiches.</p><button class="button secondary" data-action="clear-filters">Réinitialiser les filtres</button></div>`;
+    const visible = results.slice(0,libraryVisibleCount);
+    document.getElementById('results-count').textContent = `${results.length} fiche${results.length > 1 ? 's' : ''} trouvée${results.length > 1 ? 's' : ''} · ${visible.length} affichée${visible.length > 1 ? 's' : ''}. Ouvrez une question, formulez votre réponse, puis comparez.`;
+    document.getElementById('question-results').innerHTML = results.length ? visible.map(q => questionHTML(q)).join('') + (visible.length < results.length ? `<button class="button secondary load-more" data-action="load-more">Afficher ${Math.min(25,results.length-visible.length)} fiches suivantes</button>` : '') : `<div class="empty-state"><h3>Aucune fiche pour ces filtres</h3><p>Essayez un autre terme ou affichez toutes les fiches.</p><button class="button secondary" data-action="clear-filters">Réinitialiser les filtres</button></div>`;
   }
   function renderModules() {
     main.innerHTML = heading('Modules de révision',`${allQuestions.length} réponses développées, exemples et relances pour aller au-delà de la définition.`) +
@@ -339,7 +341,8 @@
       const key = action==='master' ? 'mastered' : 'favorites';
       state[key]=toggleItem(state[key],button.dataset.id); save(); updateQuestionCard(button.dataset.id);
       toast(action==='master' ? 'Progression mise à jour.' : 'Favoris mis à jour.');
-    } else if (action==='clear-filters') { libraryFilter={module:'all',status:'all',search:''}; renderModules(); }
+    } else if (action==='clear-filters') { libraryFilter={module:'all',status:'all',search:''}; libraryVisibleCount=25; renderModules(); }
+    else if (action==='load-more') { const next=filterQuestions()[libraryVisibleCount]?.id; libraryVisibleCount+=25; updateLibraryResults(); document.querySelector(`#question-${next} summary`)?.focus({preventScroll:false}); }
     else if (action==='quiz-choice') { state.activeQuiz.selected=Number(button.dataset.choice); save(); renderActiveQuiz(); document.querySelector(`[data-choice="${button.dataset.choice}"]`)?.focus({preventScroll:true}); }
     else if (action==='quiz-submit') {
       const s=state.activeQuiz;
@@ -380,14 +383,14 @@
   });
   document.addEventListener('input', event => {
     const el=event.target;
-    if(el.id==='search-questions') {libraryFilter.search=el.value;updateLibraryResults();}
+    if(el.id==='search-questions') {libraryFilter.search=el.value;libraryVisibleCount=25;updateLibraryResults();}
     if(el.dataset.note) {state.notes[el.dataset.note]=el.value;save();}
     if(el.id==='interview-notes' && state.activeInterview) {const s=state.activeInterview;s.notes[s.ids[s.index]]=el.value;save();}
   });
   document.addEventListener('change', async event => {
     const el=event.target;
-    if(el.id==='module-filter') {libraryFilter.module=el.value;updateLibraryResults();}
-    if(el.id==='status-filter') {libraryFilter.status=el.value;updateLibraryResults();}
+    if(el.id==='module-filter') {libraryFilter.module=el.value;libraryVisibleCount=25;updateLibraryResults();}
+    if(el.id==='status-filter') {libraryFilter.status=el.value;libraryVisibleCount=25;updateLibraryResults();}
     if(el.id==='quiz-module') document.getElementById('quiz-pool-info').textContent=`${el.value==='all'?allQuizzes.length:moduleMap.get(el.value).quizzes.length} questions disponibles. La session s’adapte à la taille du module.`;
     if(el.id==='plan-start') {if(validDate(el.value)&&el.validity.valid) {state.startDate=el.value;save();renderPlan();toast('Dates du planning mises à jour.');}else {el.value=state.startDate;toast('Choisissez une date valide.');}}
     if(el.dataset.rating && state.activeInterview) {const s=state.activeInterview,id=s.ids[s.index];s.ratings[id] ||= {};if(el.value==='') delete s.ratings[id][el.dataset.rating];else s.ratings[id][el.dataset.rating]=Number(el.value);save();document.querySelector('[data-action="interview-next"]').disabled=!rated(id,s.ratings);}
