@@ -127,7 +127,8 @@
     target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'
   };
   const icon = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.book}</svg>`;
-  const navItems = [['dashboard','dashboard','Tableau de bord'],['modules','book','Modules de révision'],['quiz','quiz','Quiz interactifs'],['plan','calendar','Planning 14 jours'],['interview','mic','Entretien blanc'],['progress','chart','Ma progression'],['settings','settings','Mes données']];
+  const navItems = [['dashboard','dashboard','Accueil'],['modules','book','Fiches'],['quiz','quiz','Quiz'],['interview','mic','Entretien'],['progress','chart','Progression']];
+  const extraPages = { plan:'Planning 14 jours', settings:'Mes données', sources:'Références & méthode' };
   const heading = (title, subtitle, action = '') => `<div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div>${action}</div>`;
   const percent = (n, total) => total ? Math.round(n / total * 100) : 0;
   const bar = (value, label = 'Progression') => `<div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${value}" aria-label="${label}"><div class="progress-fill" style="width:${value}%"></div></div>`;
@@ -137,51 +138,102 @@
   const nextDay = () => plan.find(d => !state.days.includes(d.day));
   const moduleOptions = (selected = 'all') => `<option value="all"${selected === 'all' ? ' selected' : ''}>Tous les modules</option>${modules.map(m => `<option value="${m.id}"${selected === m.id ? ' selected' : ''}>${m.title}</option>`).join('')}`;
   function moduleCard(m) {
-    const count = masteredCount(m);
-    return `<article class="module-card" style="--module-color:${m.color}"><div class="module-top"><span class="module-icon" style="--module-bg:${m.bg}">${m.symbol}</span><span class="pill">${m.duration}</span></div><h3>${m.title}</h3><p>${m.description}</p><div class="module-progress-label"><span>${count} / ${m.questions.length} fiches maîtrisées</span><span>${percent(count,m.questions.length)} %</span></div>${bar(percent(count,m.questions.length))}<a class="module-link" href="#module/${m.id}">Explorer le module ${icon('arrow')}</a></article>`;
+    const count = masteredCount(m), total = m.questions.length, pct = percent(count, total);
+    const hours = Math.max(1, Math.round(total * 3 / 60));
+    return `<a class="module-card" href="#module/${m.id}" style="--module-bg:${m.bg};--module-color:${m.color}"><span class="module-icon" aria-hidden="true">${m.symbol}</span><strong>${m.title}</strong><span class="module-desc">${m.description}</span>${bar(pct, `Progression ${m.title}`)}<span class="module-count"><b>${count}</b> / ${total} maîtrisées · ~${hours} h</span></a>`;
   }
   function renderDashboard() {
     const day = nextDay();
     const success = overallQuiz();
     const next = allQuestions.find(q => !state.mastered.includes(q.id)) || allQuestions[0];
-    main.innerHTML = heading('Prêt pour votre prochain chapitre ?', 'Votre préparation Tech Lead & Fullstack, un pas à la fois.', `<a class="button secondary small" href="#plan">${icon('calendar')} Mon programme</a>`) +
-      `<section class="hero"><div class="hero-copy"><span class="eyebrow">JAVA · SPRING BOOT · REACT</span><h2>Du code aux décisions.<br><span>Préparez votre entretien.</span></h2><p>Révisez les fondamentaux, entraînez votre raisonnement et apprenez à défendre vos choix techniques.</p><a class="button" href="#module/${next.module}/${next.id}">${state.mastered.length ? 'Reprendre ma préparation' : 'Commencer ma préparation'} ${icon('arrow')}</a></div><div class="stack-visual" aria-label="Parcours : interface React, services Spring et fondations Java"><div class="stack-layer"><span class="stack-name"><span class="stack-icon">&lt;/&gt;</span> React / TypeScript</span><span class="stack-code">interface</span></div><div class="stack-layer"><span class="stack-name"><span class="stack-icon">{ }</span> Spring Boot</span><span class="stack-code">services</span></div><div class="stack-layer"><span class="stack-name"><span class="stack-icon">J</span> Java / JVM</span><span class="stack-code">fondations</span></div><div class="stack-footer">comprendre → expliquer → décider</div></div></section>
-      <div class="stats-grid"><div class="stat-card"><div class="stat-icon">${icon('book')}</div><div><div class="stat-number">8</div><div class="stat-label">modules à explorer</div></div></div><div class="stat-card"><div class="stat-icon">${icon('check')}</div><div><div class="stat-number">${state.mastered.length}<small> / ${allQuestions.length}</small></div><div class="stat-label">fiches maîtrisées</div></div></div><div class="stat-card"><div class="stat-icon">${icon('target')}</div><div><div class="stat-number">${success === null ? '—' : `${success}<small> %</small>`}</div><div class="stat-label">réussite aux quiz</div></div></div><div class="stat-card"><div class="stat-icon">${icon('calendar')}</div><div><div class="stat-number">${state.days.length}<small> / 14</small></div><div class="stat-label">jours validés</div></div></div></div>
-      <div class="dashboard-columns"><section><div class="section-heading"><div><h2>Vos modules de révision</h2><p>Le socle technique. Les réflexes d’un lead.</p></div><a class="text-link" href="#modules">Toutes les fiches →</a></div><div class="module-grid">${modules.map(moduleCard).join('')}</div></section><aside class="rail"><section class="rail-card"><span class="eyebrow">${day ? `PROCHAINE ÉTAPE · JOUR ${String(day.day).padStart(2,'0')}` : 'PARCOURS TERMINÉ'}</span><h3>${day ? day.title : 'Gardez le rythme'}</h3><p>${day ? day.objective : 'Reprenez vos points faibles et passez un nouvel entretien blanc.'}</p><ul class="mini-checklist">${(day ? day.tasks : ['Revoir les erreurs des quiz.','Répéter une simulation.']).map(t => `<li>${icon('check')}<span>${t}</span></li>`).join('')}</ul><a class="button secondary" href="#plan${day ? `/${day.day}` : ''}">${day ? `Voir le jour ${day.day}` : 'Revoir le planning'} ${icon('arrow')}</a></section><section class="rail-card interview"><span class="interview-code">“ ”</span><span class="eyebrow">LE MOMENT DE SE LANCER</span><h3>Et si l’entretien<br>était aujourd’hui ?</h3><p>Des questions tirées au sort, un chronomètre et une grille pour évaluer vos réponses.</p><a class="button mint" href="#interview">${icon('mic')} Passer un entretien blanc</a></section><div class="tip"><strong>Le réflexe Tech Lead</strong>Après chaque réponse, ajoutez : « Dans quel contexte ferais-je un autre choix ? »</div></aside></div>`;
+    const nextModule = moduleMap.get(next.module);
+    const nextHref = `#module/${next.module}/${next.id}`;
+    const cards = modules.map(moduleCard).join('');
+    main.innerHTML = `<h1 class="visually-hidden">Tableau de bord</h1>
+      <section class="resume" aria-labelledby="resume-title">
+        <div class="resume-main">
+          <p class="kicker"><span class="mark">${state.mastered.length ? 'Prochaine fiche' : 'Première fiche'}</span> ${nextModule.title} · ${next.level}</p>
+          <h2 id="resume-title" class="resume-question"><a href="${nextHref}">${escape(next.title)}</a></h2>
+          <p class="resume-hint">Répondez à voix haute pendant deux minutes. Ouvrez ensuite la fiche et comparez le mécanisme, l’exemple et les compromis.</p>
+          <div class="button-row"><a class="button primary" href="${nextHref}">Ouvrir la fiche ${icon('arrow')}</a><a class="button secondary" href="#quiz">${icon('quiz')} Quiz express</a><a class="button secondary" href="#interview">${icon('mic')} Entretien blanc</a></div>
+        </div>
+        <dl class="ledger">
+          <div><dt>Fiches maîtrisées</dt><dd>${state.mastered.length}<small> / ${allQuestions.length}</small></dd></div>
+          <div><dt>Réussite aux quiz</dt><dd>${success === null ? '—' : `${success}<small> %</small>`}</dd></div>
+          <div><dt>Jours validés</dt><dd>${state.days.length}<small> / 14</small></dd></div>
+          <div><dt>Entretiens blancs</dt><dd>${state.interviews.length}</dd></div>
+        </dl>
+      </section>
+      <div class="dashboard-columns">
+        <section aria-labelledby="map-title">
+          <div class="section-heading"><div><h2 id="map-title">Choisissez un thème</h2><p>${modules.length} modules, ${allQuestions.length} questions : ouvrez-en un pour voir sa liste.</p></div><a class="text-link" href="#modules">Rechercher une question →</a></div>
+          <div class="module-grid">${cards}</div>
+        </section>
+        <aside class="rail">
+          <section class="rail-card"><span class="eyebrow">${day ? `Prochaine étape · jour ${String(day.day).padStart(2,'0')}` : 'Parcours terminé'}</span><h3>${day ? day.title : 'Gardez le rythme'}</h3><p>${day ? day.objective : 'Reprenez vos points faibles et passez un nouvel entretien blanc.'}</p><ul class="mini-checklist">${(day ? day.tasks : ['Revoir les erreurs des quiz.','Répéter une simulation.']).map(t => `<li>${icon('check')}<span>${t}</span></li>`).join('')}</ul><a class="button secondary" href="#plan${day ? `/${day.day}` : ''}">${day ? `Voir le jour ${day.day}` : 'Revoir le planning'} ${icon('arrow')}</a></section>
+          <section class="rail-card"><span class="eyebrow">Quiz</span><h3>Dix questions, dix minutes</h3><p>Les choix sont mélangés. Chaque erreur renvoie vers la fiche à relire.</p><a class="button secondary" href="#quiz">${icon('quiz')} Lancer un quiz</a></section>
+          <div class="tip"><strong>Le réflexe Tech Lead</strong>Après chaque réponse, ajoutez : « Dans quel contexte ferais-je un autre choix ? »</div>
+        </aside>
+      </div>`;
   }
-  let libraryFilter = { module:'all', status:'all', search:'' };
+  let libraryFilter = { module:'all', status:'all', level:'all', search:'', all:false };
+  let moduleView = { id:'', status:'all', level:'all' };
+  const levels = ['Fondamental','Intermédiaire','Avancé'];
+  const searchIndex = new Map();
   let libraryVisibleCount = 25;
   function questionHTML(q, open = false) {
     const done = state.mastered.includes(q.id), favorite = state.favorites.includes(q.id);
     return `<details class="question-card${done ? ' mastered' : ''}" id="question-${q.id}"${open ? ' open' : ''}><summary><span class="question-check">${done ? icon('check') : icon('book')}</span><span><span class="question-meta"><span class="pill">${moduleMap.get(q.module).short}</span><span class="pill">${q.level}</span></span><span class="question-title">${escape(q.title)}</span></span></summary><div class="answer">${answerHTML(q)}<div class="answer-actions"><button class="button ${done ? 'primary' : 'secondary'} small" data-action="master" data-id="${q.id}" aria-pressed="${done}">${icon('check')} ${done ? 'Maîtrisée' : 'Marquer comme maîtrisée'}</button><button class="button secondary small" data-action="favorite" data-id="${q.id}" aria-pressed="${favorite}">${icon('star')} ${favorite ? 'Retirer des favoris' : 'Garder en favori'}</button></div><details class="notes"${state.notes[q.id] ? ' open' : ''}><summary>Mes notes personnelles ${state.notes[q.id] ? '· enregistrées' : ''}</summary><label class="field"><span>Notes pour cette fiche</span><textarea data-note="${q.id}" maxlength="10000" placeholder="Votre exemple, un point à revoir, une expérience à raconter…">${escape(state.notes[q.id] || '')}</textarea></label></details></div></details>`;
   }
   function answerHTML(q) {
-    return `${q.answer.map(p => `<p>${escape(p)}</p>`).join('')}${q.code ? `<pre><code>${escape(q.code)}</code></pre>` : ''}<div class="pitfall"><strong>Piège à éviter</strong><br>${escape(q.pitfall)}</div><h4>Les relances possibles du recruteur</h4><ul>${q.followup.map(t => `<li>${escape(t)}</li>`).join('')}</ul>`;
+    return `<div class="answer-cols"><div class="answer-text">${q.answer.map(p => `<p>${escape(p)}</p>`).join('')}${q.code ? `<pre><code>${escape(q.code)}</code></pre>` : ''}</div><aside class="answer-margin"><div class="pitfall"><strong>Piège</strong>${escape(q.pitfall)}</div><h4>Relances possibles</h4><ul>${q.followup.map(t => `<li>${escape(t)}</li>`).join('')}</ul></aside></div>`;
   }
   const fold = text => String(text).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  function searchText(q) {
+    if (!searchIndex.has(q.id)) searchIndex.set(q.id, fold([q.title,...q.answer,q.pitfall,q.code,...q.followup].join(' ')));
+    return searchIndex.get(q.id);
+  }
+  const isBrowsing = () => libraryFilter.all || libraryFilter.search.trim() !== '' || libraryFilter.module !== 'all' || libraryFilter.status !== 'all' || libraryFilter.level !== 'all';
   function filterQuestions() {
     const query = fold(libraryFilter.search.trim());
     return allQuestions.filter(q => (libraryFilter.module === 'all' || q.module === libraryFilter.module) &&
       (libraryFilter.status === 'all' || libraryFilter.status === 'todo' && !state.mastered.includes(q.id) || libraryFilter.status === 'done' && state.mastered.includes(q.id) || libraryFilter.status === 'favorites' && state.favorites.includes(q.id)) &&
-      (!query || fold([q.title,...q.answer,q.pitfall,q.code,...q.followup].join(' ')).includes(query)));
+      (libraryFilter.level === 'all' || q.level === libraryFilter.level) &&
+      (!query || searchText(q).includes(query)));
   }
   function updateLibraryResults() {
-    const results = filterQuestions();
-    const visible = results.slice(0,libraryVisibleCount);
-    document.getElementById('results-count').textContent = `${results.length} fiche${results.length > 1 ? 's' : ''} trouvée${results.length > 1 ? 's' : ''} · ${visible.length} affichée${visible.length > 1 ? 's' : ''}. Ouvrez une question, formulez votre réponse, puis comparez.`;
-    document.getElementById('question-results').innerHTML = results.length ? visible.map(q => questionHTML(q)).join('') + (visible.length < results.length ? `<button class="button secondary load-more" data-action="load-more">Afficher ${Math.min(25,results.length-visible.length)} fiches suivantes</button>` : '') : `<div class="empty-state"><h3>Aucune fiche pour ces filtres</h3><p>Essayez un autre terme ou affichez toutes les fiches.</p><button class="button secondary" data-action="clear-filters">Réinitialiser les filtres</button></div>`;
+    const browsing = isBrowsing();
+    const grid = document.getElementById('module-grid'), results = document.getElementById('question-results'), count = document.getElementById('results-count');
+    grid.hidden = browsing; results.hidden = !browsing; count.hidden = !browsing;
+    if (!browsing) { results.innerHTML = ''; return; }
+    const found = filterQuestions();
+    const visible = found.slice(0,libraryVisibleCount);
+    count.innerHTML = `${found.length} question${found.length > 1 ? 's' : ''} trouvée${found.length > 1 ? 's' : ''}${visible.length < found.length ? ` · ${visible.length} affichée${visible.length > 1 ? 's' : ''}` : ''} <button class="text-link linklike" data-action="clear-filters">← Retour aux modules</button>`;
+    results.innerHTML = found.length ? visible.map(q => questionHTML(q)).join('') + (visible.length < found.length ? `<button class="button secondary load-more" data-action="load-more">Afficher ${Math.min(25,found.length-visible.length)} questions suivantes</button>` : '') : `<div class="empty-state"><h3>Aucune question pour ces filtres</h3><p>Essayez un autre mot ou revenez à la liste des modules.</p><button class="button secondary" data-action="clear-filters">Réinitialiser les filtres</button></div>`;
   }
+  const selectOptions = (items, selected) => items.map(([id,title]) => `<option value="${id}"${selected === id ? ' selected' : ''}>${title}</option>`).join('');
+  const levelOptions = selected => selectOptions([['all','Tous les niveaux'],...levels.map(l => [l,l])], selected);
+  const statusOptions = selected => selectOptions([['all','Toutes les questions'],['todo','À réviser'],['done','Maîtrisées'],['favorites','Mes favoris']], selected);
   function renderModules() {
-    main.innerHTML = heading('Modules de révision',`${allQuestions.length} réponses développées, exemples et relances pour aller au-delà de la définition.`) +
-      `<div class="filters"><label class="search-wrap">${icon('search')}<input class="search" id="search-questions" type="search" placeholder="Rechercher : transaction, useEffect, leadership…" aria-label="Rechercher dans les fiches" value="${escape(libraryFilter.search)}"></label><select class="filter" id="module-filter" aria-label="Filtrer par module">${moduleOptions(libraryFilter.module)}</select><select class="filter" id="status-filter" aria-label="Filtrer par progression">${[['all','Toutes les fiches'],['todo','À réviser'],['done','Maîtrisées'],['favorites','Mes favoris']].map(([id,title]) => `<option value="${id}"${libraryFilter.status === id ? ' selected' : ''}>${title}</option>`).join('')}</select></div><p class="results-count" id="results-count" role="status"></p><div class="question-list" id="question-results"></div>`;
+    main.innerHTML = heading('Les questions',`${allQuestions.length} questions corrigées, classées par thème. Choisissez un module ou cherchez un mot.`) +
+      `<div class="filters"><label class="search-wrap">${icon('search')}<input class="search" id="search-questions" type="search" placeholder="Rechercher : transaction, useEffect, Kafka…" aria-label="Rechercher dans les questions" value="${escape(libraryFilter.search)}"></label><select class="filter" id="module-filter" aria-label="Module">${moduleOptions(libraryFilter.module)}</select><select class="filter" id="level-filter" aria-label="Niveau">${levelOptions(libraryFilter.level)}</select><select class="filter" id="status-filter" aria-label="Progression">${statusOptions(libraryFilter.status)}</select></div><div id="module-grid"><div class="module-grid">${modules.map(moduleCard).join('')}</div><div class="button-row center-row"><button class="button secondary" data-action="show-all">Voir toutes les questions</button></div></div><p class="results-count" id="results-count" role="status"></p><div class="question-list" id="question-results"></div>`;
     updateLibraryResults();
+  }
+  function moduleListHTML(m) {
+    const items = m.questions.filter(q => (moduleView.level === 'all' || q.level === moduleView.level) && (moduleView.status === 'all' || (moduleView.status === 'todo') === !state.mastered.includes(q.id)));
+    return items.length ? items.map(q => questionHTML({...q,module:m.id},false)).join('') : '<div class="empty-state"><h3>Rien à afficher ici</h3><p>Changez de niveau ou affichez toutes les questions du module.</p></div>';
+  }
+  function updateModuleList() {
+    const m = moduleMap.get(moduleView.id), box = document.getElementById('module-questions');
+    if (m && box) box.innerHTML = moduleListHTML(m);
   }
   function renderModule(id, questionId) {
     const m = moduleMap.get(id);
     if (!m) return renderNotFound();
-    main.innerHTML = heading(m.title,m.description,`<a class="text-link" href="#modules">← Toutes les fiches</a>`) +
-      `<section class="module-banner"><span class="module-icon" style="--module-bg:${m.bg};--module-color:${m.color}">${m.symbol}</span><div><h2>${masteredCount(m)} / ${m.questions.length} fiches maîtrisées</h2><p>${m.duration} de révision conseillée · ${m.quizzes.length} questions de quiz</p></div><div class="button-row"><a class="button primary" href="#quiz/${m.id}">${icon('quiz')} Tester ce module</a></div></section><p class="welcome-note">Répondez d’abord à voix haute. Ouvrez ensuite la fiche pour comparer votre raisonnement et préparer les relances.</p><div class="question-list">${m.questions.map(q => questionHTML({...q,module:id},q.id === questionId)).join('')}</div>`;
-    if (questionId && questionMap.get(questionId)?.module === id) requestAnimationFrame(() => document.getElementById(`question-${questionId}`)?.scrollIntoView({ block:'start' }));
+    if (moduleView.id !== id || questionId) moduleView = { id, status:'all', level:'all' };
+    main.innerHTML = heading(m.title,m.description,`<a class="text-link" href="#modules">← Tous les modules</a>`) +
+      `<section class="module-banner"><span class="module-icon" style="--module-bg:${m.bg};--module-color:${m.color}">${m.symbol}</span><div><h2>${masteredCount(m)} / ${m.questions.length} questions maîtrisées</h2><p>${m.quizzes.length} questions de quiz · environ ${Math.max(1, Math.round(m.questions.length * 3 / 60))} h de révision</p></div><div class="button-row"><a class="button primary" href="#quiz/${m.id}">${icon('quiz')} Tester ce module</a></div></section><p class="welcome-note">Répondez à voix haute, puis ouvrez la question pour comparer votre réponse.</p><div class="filters filters-compact"><select class="filter" id="module-level-filter" aria-label="Niveau">${levelOptions(moduleView.level)}</select><select class="filter" id="module-status-filter" aria-label="Progression">${statusOptions(moduleView.status).replace(/<option value="favorites">[^<]*<\/option>/,'')}</select></div><div class="question-list" id="module-questions">${moduleListHTML(m)}</div>`;
+    if (questionId && questionMap.get(questionId)?.module === id) requestAnimationFrame(() => { const card = document.getElementById(`question-${questionId}`); if (card) { card.open = true; card.scrollIntoView({ block:'start' }); } });
   }
   function shuffle(items) {
     const result = [...items];
@@ -192,7 +244,7 @@
     if (state.activeQuiz) return renderActiveQuiz();
     const selected = moduleMap.has(selectedModule) ? selectedModule : 'all';
     main.innerHTML = heading('Testez vos réflexes','Une réponse par question, une correction expliquée et des fiches pour approfondir.') +
-      `<div class="two-columns"><section class="card quiz-config"><span class="eyebrow">ENTRAÎNEMENT ACTIF</span><h2>Votre prochaine session</h2><p class="muted small-copy" style="margin-top:10px">Les questions et les choix sont mélangés. Répondez avant de lire la correction, puis passez à la suite.</p><form id="quiz-config"><div class="config-fields"><label class="field">Module<select id="quiz-module">${moduleOptions(selected)}</select></label><label class="field">Nombre de questions<select id="quiz-count"><option value="5">5 questions · express</option><option value="10" selected>10 questions · régulier</option><option value="20">20 questions · approfondi</option><option value="25">25 questions · module complet</option><option value="${allQuizzes.length}">Toutes les questions disponibles</option></select></label></div><p class="welcome-note" id="quiz-pool-info">${selected === 'all' ? allQuizzes.length : moduleMap.get(selected).quizzes.length} questions disponibles. La session s’adapte à la taille du module.</p><button class="button primary" type="submit">${icon('play')} Démarrer le quiz</button></form></section><aside class="card"><span class="eyebrow">UNE MÉTHODE SIMPLE</span><h2>Comprendre vos erreurs</h2><ul class="mini-checklist"><li>${icon('check')}<span>Choisissez votre réponse sans ouvrir les fiches.</span></li><li>${icon('check')}<span>Validez pour afficher la correction et l’explication.</span></li><li>${icon('check')}<span>Retrouvez vos résultats et modules à renforcer dans votre progression.</span></li></ul><div class="notice">Le score évalue cette banque de questions. La maîtrise des fiches reste une auto-évaluation distincte.</div>${state.quizzes.length ? `<a class="text-link" href="#quiz/result">Voir mon dernier résultat →</a>` : ''}</aside></div>`;
+      `<div class="two-columns"><section class="card quiz-config"><span class="eyebrow">ENTRAÎNEMENT ACTIF</span><h2>Votre prochaine session</h2><p class="muted small-copy" style="margin-top:10px">Les questions et les choix sont mélangés. Répondez avant de lire la correction, puis passez à la suite.</p><form id="quiz-config"><div class="config-fields"><label class="field">Module<select id="quiz-module">${moduleOptions(selected)}</select></label><label class="field">Nombre de questions<select id="quiz-count"><option value="5">5 questions · express</option><option value="10" selected>10 questions · régulier</option><option value="20">20 questions · approfondi</option><option value="all">Toutes les questions du choix</option></select></label></div><p class="welcome-note" id="quiz-pool-info">${selected === 'all' ? allQuizzes.length : moduleMap.get(selected).quizzes.length} questions disponibles. La session s’adapte à la taille du module.</p><button class="button primary" type="submit">${icon('play')} Démarrer le quiz</button></form></section><aside class="card"><span class="eyebrow">UNE MÉTHODE SIMPLE</span><h2>Comprendre vos erreurs</h2><ul class="mini-checklist"><li>${icon('check')}<span>Choisissez votre réponse sans ouvrir les fiches.</span></li><li>${icon('check')}<span>Validez pour afficher la correction et l’explication.</span></li><li>${icon('check')}<span>Retrouvez vos résultats et modules à renforcer dans votre progression.</span></li></ul><div class="notice">Le score évalue cette banque de questions. La maîtrise des fiches reste une auto-évaluation distincte.</div>${state.quizzes.length ? `<a class="text-link" href="#quiz/result">Voir mon dernier résultat →</a>` : ''}</aside></div>`;
   }
   function startQuiz(ids, count) {
     const questions = shuffle(ids).slice(0, count);
@@ -216,7 +268,7 @@
   }
   function renderPlan(dayId) {
     main.innerHTML = heading('14 jours pour vous préparer','Un parcours de 75 à 120 minutes par jour. Adaptez le rythme à votre expérience.',`<button class="button secondary small" data-action="print">Imprimer le planning</button>`) +
-      `<section class="card plan-top"><div><span class="eyebrow">VOTRE RYTHME, VOTRE PARCOURS</span><h2>${state.days.length} jour${state.days.length > 1 ? 's' : ''} validé${state.days.length > 1 ? 's' : ''} sur 14</h2><p class="muted small-copy" style="margin-top:7px">Validez une journée après avoir réalisé ses exercices et son livrable.</p></div><label class="field">Date de départ<input id="plan-start" type="date" value="${state.startDate}" min="2000-01-01" max="2100-12-31"></label></section><div class="plan-grid">${plan.map(day => `<article class="day-card${state.days.includes(day.day) ? ' completed' : ''}" id="day-${day.day}"><div class="day-top"><span class="day-number">JOUR ${String(day.day).padStart(2,'0')} <span class="inline-date">· ${formatDate(planDate(day.day))}</span></span><span class="pill">${day.time}</span></div><h3>${day.title}</h3><p>${day.objective}</p><ul>${day.tasks.map(t=>`<li>${t}</li>`).join('')}<li><strong>Mise en pratique :</strong> ${day.exercise}</li></ul><div class="day-deliverable"><strong>VOTRE LIVRABLE</strong>${day.deliverable}</div><div class="button-row"><a class="text-link" href="${day.module ? `#module/${day.module}` : '#interview'}">${day.module ? 'Ouvrir le module' : 'Passer l’entretien'} →</a><button class="button ${state.days.includes(day.day) ? 'primary' : 'secondary'} small" data-action="toggle-day" data-day="${day.day}" aria-pressed="${state.days.includes(day.day)}">${icon('check')} ${state.days.includes(day.day) ? 'Journée validée' : 'Valider la journée'}</button></div></article>`).join('')}</div>`;
+      `<section class="card plan-top"><div><span class="eyebrow">VOTRE RYTHME, VOTRE PARCOURS</span><h2>${state.days.length} jour${state.days.length > 1 ? 's' : ''} validé${state.days.length > 1 ? 's' : ''} sur 14</h2><p class="muted small-copy" style="margin-top:7px">Validez une journée après avoir réalisé ses exercices et son livrable.</p></div><label class="field">Date de départ<input id="plan-start" type="date" value="${state.startDate}" min="2000-01-01" max="2100-12-31"></label></section><div class="plan-grid">${plan.map(day => `<article class="day-card${state.days.includes(day.day) ? ' completed' : ''}" id="day-${day.day}"><div class="day-top"><span class="day-number"><span class="day-label">Jour</span><span class="day-big">${String(day.day).padStart(2,'0')}</span><span class="inline-date">${formatDate(planDate(day.day))}</span></span><span class="pill">${day.time}</span></div><h3>${day.title}</h3><p>${day.objective}</p><ul>${day.tasks.map(t=>`<li>${t}</li>`).join('')}<li><strong>Mise en pratique :</strong> ${day.exercise}</li></ul><div class="day-deliverable"><strong>VOTRE LIVRABLE</strong>${day.deliverable}</div><div class="button-row"><a class="text-link" href="${day.module ? `#module/${day.module}` : '#interview'}">${day.module ? 'Ouvrir le module' : 'Passer l’entretien'} →</a><button class="button ${state.days.includes(day.day) ? 'primary' : 'secondary'} small" data-action="toggle-day" data-day="${day.day}" aria-pressed="${state.days.includes(day.day)}">${icon('check')} ${state.days.includes(day.day) ? 'Journée validée' : 'Valider la journée'}</button></div></article>`).join('')}</div>`;
     if (integer(Number(dayId),1,14)) requestAnimationFrame(()=>document.getElementById(`day-${dayId}`)?.scrollIntoView({block:'start'}));
   }
   function renderInterview() {
@@ -284,7 +336,7 @@
   }
   function renderSources() {
     main.innerHTML = heading('Références & méthode','Une base de préparation pour comprendre et expliquer les mécanismes.') +
-      `<section class="card intro-copy"><h2>Comment utiliser cet atelier</h2><p class="small-copy">Les fiches sont des synthèses pédagogiques originales. Avant d’ouvrir une réponse, prenez deux minutes pour formuler votre explication. Comparez ensuite mécanisme, exemple, pièges et compromis. Utilisez vos expériences réelles pour les questions de leadership.</p><p class="small-copy">Les exemples sont ciblés : ils n’incluent pas tous les imports, types, dépendances ou contrôles d’une application complète. Le socle vise Java 17+ ; les threads virtuels sont signalés Java 21+. Les exemples Spring utilisent les approches modernes SecurityFilterChain, Jakarta et injection constructeur. Vérifiez les détails d’API pour les versions de votre projet.</p><p class="small-copy">Le planning propose une sélection ciblée et des exercices à réaliser dans votre environnement ou sur papier. Les 25 fiches de chaque module permettent d’approfondir à votre rythme. Le site ne compile pas de code. Les entretiens blancs proposent des attendus et une auto-évaluation, sans analyse automatique de vos réponses.</p><div class="notice">Le contenu embarqué reste accessible hors ligne. Les références ci-dessous ouvrent la documentation en ligne.</div><h2>Pour approfondir à la source</h2><ul class="source-list">${sources.map(s=>`<li><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.name} ↗</a></li>`).join('')}</ul><p class="result-note">Édition du 13 octobre 2026 · ${modules.length} modules · ${allQuestions.length} fiches · ${allQuizzes.length} questions de quiz · 4 cas pratiques.</p></section>`;
+      `<section class="card intro-copy"><h2>Comment utiliser cet atelier</h2><p class="small-copy">Les fiches sont des synthèses pédagogiques originales. Avant d’ouvrir une réponse, prenez deux minutes pour formuler votre explication. Comparez ensuite mécanisme, exemple, pièges et compromis. Utilisez vos expériences réelles pour les questions de leadership.</p><p class="small-copy">Les exemples sont ciblés : ils n’incluent pas tous les imports, types, dépendances ou contrôles d’une application complète. Le socle vise Java 17+ ; les threads virtuels sont signalés Java 21+. Les exemples Spring utilisent les approches modernes SecurityFilterChain, Jakarta et injection constructeur. Vérifiez les détails d’API pour les versions de votre projet.</p><p class="small-copy">Le planning propose une sélection ciblée et des exercices à réaliser dans votre environnement ou sur papier. Les modules permettent d’approfondir à votre rythme. Le site ne compile pas de code. Les entretiens blancs proposent des attendus et une auto-évaluation, sans analyse automatique de vos réponses.</p><div class="notice">Le contenu embarqué reste accessible hors ligne. Les références ci-dessous ouvrent la documentation en ligne.</div><h2>Pour approfondir à la source</h2><ul class="source-list">${sources.map(s=>`<li><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.name} ↗</a></li>`).join('')}</ul><p class="result-note">Édition du 13 octobre 2026 · ${modules.length} modules · ${allQuestions.length} fiches · ${allQuizzes.length} questions de quiz · 4 cas pratiques.</p></section>`;
   }
   function renderNotFound() { main.innerHTML = `<div class="empty-state"><h1>Cette page n’existe pas</h1><p>Retrouvez votre préparation depuis le tableau de bord.</p><a class="button primary" href="#dashboard">Retour à l’accueil</a></div>`; }
   let previousRoute = '';
@@ -294,7 +346,7 @@
     if (page !== 'interview' || route[1] === 'result') pauseInterview();
     const active = page === 'module' ? 'modules' : page;
     document.getElementById('navigation').innerHTML = navItems.map(([id,symbol,title])=>`<a class="nav-link${id===active ? ' active' : ''}" href="#${id}"${id===active ? ' aria-current="page"' : ''}>${icon(symbol)}${title}</a>`).join('');
-    document.getElementById('page-label').textContent = navItems.find(n=>n[0]===active)?.[2] || 'Références';
+    document.getElementById('page-label').textContent = navItems.find(n=>n[0]===active)?.[2] || extraPages[active] || 'Références';
     const changed = previousRoute !== location.hash;
     previousRoute = location.hash;
     if (page==='dashboard') renderDashboard();
@@ -325,10 +377,14 @@
     // Keep the module-level count in sync without closing the open response.
     const banner = document.querySelector('.module-banner h2');
     const module = moduleMap.get(questionMap.get(id).module);
-    if (banner) banner.textContent = `${masteredCount(module)} / ${module.questions.length} fiches maîtrisées`;
-    if (document.getElementById('results-count')) {
+    if (banner) banner.textContent = `${masteredCount(module)} / ${module.questions.length} questions maîtrisées`;
+    if (document.getElementById('results-count') && isBrowsing()) {
       const visible = filterQuestions();
       if (!visible.some(q=>q.id===id)) updateLibraryResults();
+    }
+    if (document.getElementById('module-questions') && moduleView.status !== 'all') {
+      const m = moduleMap.get(moduleView.id);
+      if (m && !m.questions.some(q => q.id === id && (moduleView.status === 'todo') === !state.mastered.includes(q.id))) updateModuleList();
     }
   }
   document.addEventListener('click', async event => {
@@ -341,7 +397,8 @@
       const key = action==='master' ? 'mastered' : 'favorites';
       state[key]=toggleItem(state[key],button.dataset.id); save(); updateQuestionCard(button.dataset.id);
       toast(action==='master' ? 'Progression mise à jour.' : 'Favoris mis à jour.');
-    } else if (action==='clear-filters') { libraryFilter={module:'all',status:'all',search:''}; libraryVisibleCount=25; renderModules(); }
+    } else if (action==='clear-filters') { libraryFilter={module:'all',status:'all',level:'all',search:'',all:false}; libraryVisibleCount=25; renderModules(); window.scrollTo(0,0); }
+    else if (action==='show-all') { libraryFilter.all=true; libraryVisibleCount=25; updateLibraryResults(); document.getElementById('question-results')?.scrollIntoView({block:'start'}); }
     else if (action==='load-more') { const next=filterQuestions()[libraryVisibleCount]?.id; libraryVisibleCount+=25; updateLibraryResults(); document.querySelector(`#question-${next} summary`)?.focus({preventScroll:false}); }
     else if (action==='quiz-choice') { state.activeQuiz.selected=Number(button.dataset.choice); save(); renderActiveQuiz(); document.querySelector(`[data-choice="${button.dataset.choice}"]`)?.focus({preventScroll:true}); }
     else if (action==='quiz-submit') {
@@ -378,7 +435,7 @@
     }
   });
   document.addEventListener('submit', event => {
-    if(event.target.id==='quiz-config') {event.preventDefault();const selected=document.getElementById('quiz-module').value;startQuiz(allQuizzes.filter(q=>selected==='all'||q.module===selected).map(q=>q.id),Number(document.getElementById('quiz-count').value));}
+    if(event.target.id==='quiz-config') {event.preventDefault();const selected=document.getElementById('quiz-module').value;const raw=document.getElementById('quiz-count').value;startQuiz(allQuizzes.filter(q=>selected==='all'||q.module===selected).map(q=>q.id),raw==='all'?Infinity:Number(raw));}
     if(event.target.id==='interview-config') {event.preventDefault();startInterview(Number(document.getElementById('interview-count').value));}
   });
   document.addEventListener('input', event => {
@@ -391,6 +448,9 @@
     const el=event.target;
     if(el.id==='module-filter') {libraryFilter.module=el.value;libraryVisibleCount=25;updateLibraryResults();}
     if(el.id==='status-filter') {libraryFilter.status=el.value;libraryVisibleCount=25;updateLibraryResults();}
+    if(el.id==='level-filter') {libraryFilter.level=el.value;libraryVisibleCount=25;updateLibraryResults();}
+    if(el.id==='module-level-filter') {moduleView.level=el.value;updateModuleList();}
+    if(el.id==='module-status-filter') {moduleView.status=el.value;updateModuleList();}
     if(el.id==='quiz-module') document.getElementById('quiz-pool-info').textContent=`${el.value==='all'?allQuizzes.length:moduleMap.get(el.value).quizzes.length} questions disponibles. La session s’adapte à la taille du module.`;
     if(el.id==='plan-start') {if(validDate(el.value)&&el.validity.valid) {state.startDate=el.value;save();renderPlan();toast('Dates du planning mises à jour.');}else {el.value=state.startDate;toast('Choisissez une date valide.');}}
     if(el.dataset.rating && state.activeInterview) {const s=state.activeInterview,id=s.ids[s.index];s.ratings[id] ||= {};if(el.value==='') delete s.ratings[id][el.dataset.rating];else s.ratings[id][el.dataset.rating]=Number(el.value);save();document.querySelector('[data-action="interview-next"]').disabled=!rated(id,s.ratings);}

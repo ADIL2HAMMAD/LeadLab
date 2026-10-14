@@ -5,21 +5,22 @@ Java · Spring Boot · React / TypeScript
 OUVRIR LE SITE
 1. Extrayez tout le ZIP dans un dossier.
 2. Ouvrez index.html avec un navigateur moderne (Edge, Chrome, Firefox…).
-3. Gardez index.html, styles.css, redesign.css, data.js, app.js ainsi que les dossiers assets et content ensemble.
+3. Gardez index.html, styles.css, data.js, app.js ainsi que les dossiers assets et content ensemble.
 Aucune installation, connexion Internet ou dépendance serveur n’est nécessaire.
 Le site fonctionne avec des scripts classiques, sans requête de chargement de données.
 
 CONTENU
-- 8 modules : Java Core, Spring Boot, JPA/Hibernate, Spring Security,
-  React/TypeScript, architecture, Tests/DevOps, leadership technique.
-- 200 fiches détaillées (25 par module) : explications, exemples, pièges et relances.
-- 200 questions de quiz (25 par module), ordre et choix mélangés, corrections détaillées,
+- 16 modules : Java, Spring Boot, JPA, Sécurité, React/TypeScript, architecture, Tests/DevOps,
+  leadership, Debugging, Live coding, Scénarios de production, API, Performance,
+  System design, IA & génie logiciel, Questions pièges Senior.
+- 745 fiches détaillées : explications, exemples, pièges et relances.
+- 745 questions de quiz, ordre et choix mélangés, corrections détaillées,
   bilan, historique et possibilité de rejouer ses erreurs.
 - Planning de 14 jours avec exercices, livrables et dates ajustables.
 - Entretien blanc : 4, 6 ou 8 questions, chronomètre de 20, 30 ou 40 minutes,
   4 mises en situation dans la banque, notes et auto-évaluation sur 4 critères.
 - Recherche, filtres, favoris, notes et suivi de progression.
-- Bibliothèque générale affichée par lots de 25 fiches pour faciliter la lecture.
+- Recherche simple : un mot + module, niveau et progression ; résultats par lots de 25.
 
 PROGRESSION ET SAUVEGARDES
 La progression est enregistrée dans le stockage local du navigateur.
@@ -62,7 +63,6 @@ tout le contenu de préparation est déjà embarqué dans le dossier.
 STRUCTURE
 index.html       Structure de la page
 styles.css       Design responsive et styles d’impression
-redesign.css     Direction visuelle et ajustements responsive
 data.js          Fiches, quiz, planning, cas pratiques et références
 content/         Questions et quiz complémentaires, chargés localement
 app.js           Navigation, interactions et stockage local
